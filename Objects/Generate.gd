@@ -1,12 +1,13 @@
 extends Node
 export(Array, PackedScene) var rooms;
-export(int) var numberRooms; 
+export(int) var numberRooms;
+export(int) var randomSeed;
 var size;
 
 
 func _ready():
 	size = int(numberRooms);
-	var map = Map.new(self,size,numberRooms);
+	var map = Map.new(self,size,numberRooms,randomSeed);
 
 class Map:
 	enum turtledir{
@@ -21,8 +22,8 @@ class Map:
 	var activeRooms;
 	var rooms;
 	var this;
-	func _init(this:Node,size:int,rooms:int):
-		seed(10);
+	func _init(this:Node,size:int,rooms:int,randomSeed:int):
+		seed(randomSeed);
 		self.this = this;
 		self.size = size;
 		self.map = [];
@@ -30,8 +31,6 @@ class Map:
 		self.activeRooms = [];
 		_inicializateMap();
 		_createMap();
-		#for r in map:
-		#	print(r);
 		_drawRooms();
 	func _inicializateMap():
 		for y in range(self.size):
@@ -39,7 +38,7 @@ class Map:
 			for x in range(self.size):
 				map[y].append("00000"); #primer 0 se activa si la habitacion existe segundo 0 se activa si hay una habitacion arriba
 	func _createMap():
-		var position = Vector2(((size/2)-1)+(randi()%3),((size/2)-1)+(randi()%3));
+		var position = Vector2(((size/2))+(randi()%3),((size/2))+(randi()%3));
 		var startpos = position;
 		var roomr = 0;
 		self.map[position.y][position.x][0] = '1';
@@ -94,28 +93,34 @@ class Map:
 		for room in range(roomr):
 			var roomnext = randi()%activeRooms.size();
 			var coord = activeRooms[roomnext];
-			if(map[coord.y][coord.x][turtledir.right] != '1'):
+			if(map[coord.y][coord.x][turtledir.right] != '1' and _checkRooms(Vector2(coord.x+1,coord.y))):
 				map[coord.y][coord.x+1][0] = '1';
 				map[coord.y][coord.x+1][turtledir.left] = '1';
 				map[coord.y][coord.x][turtledir.right] = '1';
 				activeRooms.append(Vector2(coord.x+1,coord.y));
-			elif(map[coord.y][coord.x][turtledir.left] != '1'):
+			elif(map[coord.y][coord.x][turtledir.left] != '1' and _checkRooms(Vector2(coord.x-1,coord.y))):
 				map[coord.y][coord.x-1][0] = '1';
 				map[coord.y][coord.x-1][turtledir.right] = '1';
 				map[coord.y][coord.x][turtledir.left] = '1';
 				activeRooms.append(Vector2(coord.x-1,coord.y));
-			elif(map[coord.y][coord.x][turtledir.up] != '1'):
-				map[coord.y][coord.x-1][0] = '1';
-				map[coord.y][coord.x-1][turtledir.down] = '1';
+			elif(map[coord.y][coord.x][turtledir.up] != '1' and _checkRooms(Vector2(coord.x,coord.y-1))):
+				map[coord.y-1][coord.x][0] = '1';
+				map[coord.y-1][coord.x][turtledir.down] = '1';
 				map[coord.y][coord.x][turtledir.up] = '1';
 				activeRooms.append(Vector2(coord.x,coord.y-1));
-			elif(map[coord.y][coord.x][turtledir.down] != '1'):
-				map[coord.y][coord.x+1][0] = '1';
-				map[coord.y][coord.x+1][turtledir.up] = '1';
+			elif(map[coord.y][coord.x][turtledir.down] != '1'  and _checkRooms(Vector2(coord.x,coord.y+1))):
+				map[coord.y+1][coord.x][0] = '1';
+				map[coord.y+1][coord.x][turtledir.up] = '1';
 				map[coord.y][coord.x][turtledir.down] = '1';
 				activeRooms.append(Vector2(coord.x,coord.y+1));
-		
+			else:
+				roomr+=1;
 	
+	func _checkRooms(coord:Vector2):
+		var nR = int(map[coord.y+1][coord.x][0])+int(map[coord.y-1][coord.x][0])+int(map[coord.y][coord.x+1][0])+int(map[coord.y][coord.x-1][0]);
+		if(nR == 1):
+			return true;
+		return false;
 	func _drawRooms():
 		for i in range(activeRooms.size()):
 			var num = randi()%this.rooms.size();
@@ -130,4 +135,4 @@ class Map:
 				createRoom.indicates['Up'].queue_free();
 			if(doorsO[turtledir.down] == '1'):
 				createRoom.indicates['Down'].queue_free();
-			createRoom.position = Vector2(createRoom.width,createRoom.height)*activeRooms[i] - Vector2(size*size,size*size);
+			createRoom.position = Vector2(createRoom.width,createRoom.height)*activeRooms[i] - Vector2(size*70,size*70);

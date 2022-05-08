@@ -7,10 +7,21 @@
 [node name="World" type="Node"]
 script = ExtResource( 1 )
 rooms = [ ExtResource( 2 ) ]
-numberRooms = 30
+numberRooms = 50
+randomSeed = 5
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0
 current = true
 script = ExtResource( 3 )
-speed = 1000.0
+speed = 10.0
+
+[node name="ColorRect" type="ColorRect" parent="Camera2D"]
+margin_left = -438.761
+margin_top = -322.54
+margin_right = 3264.24
+margin_bottom = 1485.46
+color = Color( 0.152941, 0.152941, 0.211765, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
